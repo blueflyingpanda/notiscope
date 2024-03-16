@@ -1,3 +1,10 @@
+# Gradle files
+.gradle/
+build/
+
+# Local configuration file (sdk path, etc)
+local.properties
+
 # Compiled class file
 *.class
 
@@ -9,6 +16,22 @@
 
 # Mobile Tools for Java (J2ME)
 .mtj.tmp/
+
+
+# Android Studio generated files and folders
+captures/
+.externalNativeBuild/
+.cxx/
+*.apk
+output.json
+
+# IntelliJ
+*.iml
+.idea/
+misc.xml
+deploymentTargetDropDown.xml
+render.experimental.xml
+
 
 # Package Files #
 *.jar
@@ -23,4 +46,5 @@
 hs_err_pid*
 replay_pid*
 
-.idea/
+/.gradle/
+/.gradle/8.2/

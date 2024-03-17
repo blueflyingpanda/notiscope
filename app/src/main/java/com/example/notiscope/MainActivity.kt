@@ -77,15 +77,8 @@ fun MyScreen(viewModel: SensorViewModel = viewModel()) {
                 Button(
                     onClick = { viewModel.toggleSensorState() }
                 ) {
-                    Text(text = stringResource(R.string.toggle_sensor))
+                    Text(text = if (viewModel.isSensorEnabled) stringResource(R.string.sensor_on) else stringResource(R.string.sensor_off))
                 }
-                Text(
-                    text = if (viewModel.isSensorEnabled) stringResource(R.string.sensor_on) else stringResource(R.string.sensor_off),
-                    color = Color.White,
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .padding(top = 16.dp, end = 16.dp)
-                )
             }
         }
 

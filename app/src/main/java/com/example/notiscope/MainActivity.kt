@@ -5,17 +5,24 @@ import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.Button
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.semantics.Role.Companion.Button
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 
@@ -53,12 +60,30 @@ fun MyScreen(viewModel: SensorViewModel = viewModel()) {
         }
     }
 
-    Surface(color = if (viewModel.isFacingDown) Color.Blue else Color.Red, modifier = Modifier.fillMaxSize()) {}
+    val status by remember { mutableStateOf(false) }
+
+
+    Surface(color = if (status) Color.Blue else Color.Red, modifier = Modifier.fillMaxSize()) {
+
+        Log.d("Scr", "text")
+
+        Box(modifier = Modifier
+            .size(50.dp)) {
+            Button(
+                onClick = { status != status }
+
+            ) {
+                Text(text = "Switch")
+            }
+        }
+
+
+    }
 }
+
 
 class SensorViewModel : ViewModel() {
     var isFacingDown by mutableStateOf(false)
-        private set
 
     fun onSensorChanged(event: SensorEvent) {
         val x = event.values[0]

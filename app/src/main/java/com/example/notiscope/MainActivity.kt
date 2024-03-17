@@ -1,100 +1,61 @@
 package com.example.notiscope
-import android.content.Context.SENSOR_SERVICE
-import android.hardware.Sensor
-import android.hardware.SensorEvent
-import android.hardware.SensorEventListener
-import android.hardware.SensorManager
+import android.app.NotificationManager
+import android.content.Intent
 import android.os.Bundle
+import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Button
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.core.content.ContextCompat
 
 
+@Composable
+fun MyScreen() {
+    val isServiceRunning = remember { mutableStateOf(false) }
 
+    val context = LocalContext.current
+
+    Surface(modifier = Modifier.fillMaxSize()) {
+        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.Center) {
+            Button(
+                onClick = {
+                    val serviceIntent = Intent(context, SensorService::class.java)
+                    if (!isServiceRunning.value) {
+                        ContextCompat.startForegroundService(context, serviceIntent)
+                        isServiceRunning.value = true
+                    } else {
+                        context.stopService(serviceIntent)
+                        isServiceRunning.value = false
+                    }
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(text = if (isServiceRunning.value) "Stop Sensor Service" else "Start Sensor Service")
+            }
+        }
+    }
+}
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        checkDoNotDisturbPermission()
         setContent {
             MyScreen()
         }
     }
-}
-
-@Composable
-fun MyScreen(viewModel: SensorViewModel = viewModel()) {
-    val context = LocalContext.current
-    val sensorManager = context.getSystemService(SENSOR_SERVICE) as SensorManager
-    val accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
-    val sensorListener = remember {
-        object : SensorEventListener {
-            override fun onSensorChanged(event: SensorEvent?) {
-                event?.let {
-                    if (viewModel.isSensorEnabled) {
-                        viewModel.onSensorChanged(it)
-                    }
-                }
-            }
-
-            override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
+    private fun checkDoNotDisturbPermission() {
+        val notificationManager = ContextCompat.getSystemService(this, NotificationManager::class.java) as NotificationManager
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M && !notificationManager.isNotificationPolicyAccessGranted) {
+            val intent = Intent(Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS)
+            startActivity(intent)
         }
-    }
-
-    DisposableEffect(viewModel.isSensorEnabled) {
-        if (viewModel.isSensorEnabled) {
-            sensorManager.registerListener(sensorListener, accelerometer, SensorManager.SENSOR_DELAY_UI)
-        } else {
-            sensorManager.unregisterListener(sensorListener)
-        }
-        onDispose {
-            sensorManager.unregisterListener(sensorListener)
-        }
-    }
-
-    Surface(
-        color = if (viewModel.isFacingDown) Color.Blue else Color.Red,
-        modifier = Modifier.fillMaxSize()
-    ) {
-        Surface(
-            color = if (viewModel.isFacingDown) Color.Blue else Color.Red,
-            modifier = Modifier.fillMaxSize()
-        ) {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Button(
-                    onClick = { viewModel.toggleSensorState() }
-                ) {
-                    Text(text = if (viewModel.isSensorEnabled) stringResource(R.string.sensor_on) else stringResource(R.string.sensor_off))
-                }
-            }
-        }
-
-    }
-}
-
-class SensorViewModel : ViewModel() {
-    var isFacingDown by mutableStateOf(false)
-    var isSensorEnabled by mutableStateOf(true)
-
-    fun onSensorChanged(event: SensorEvent) {
-        val z = event.values[2]
-        isFacingDown = z < -9 && z > -10
-    }
-
-    fun toggleSensorState() {
-        isSensorEnabled = !isSensorEnabled
     }
 }
